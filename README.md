@@ -1,2 +1,2 @@
-# capistrano-shoryuyken
-Shoyuken integration for Capistrano
+# capistrano-shoryuken
+Shoryuken integration for Capistrano
