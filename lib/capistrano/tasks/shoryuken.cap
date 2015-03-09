@@ -1,0 +1,121 @@
+namespace :load do
+  task :defaults do
+    set :shoryuken_default_hooks, -> { true }
+
+    set :shoryuken_pid, -> { File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid') }
+    set :shoryuken_env, -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
+    set :shoryuken_log, -> { File.join(shared_path, 'log', 'shoryuken.log') }
+    set :shoryuken_role, -> { :app }
+    
+    # Rbenv and RVM integration
+    set :rbenv_map_bins, fetch(:rbenv_map_bins).to_a.concat(%w(shoryuken))
+    set :rvm_map_bins, fetch(:rvm_map_bins).to_a.concat(%w(shoryuken))
+  end
+end
+
+
+namespace :deploy do
+  before :starting, :check_shoryuken_hooks do
+    invoke 'shoryuken:add_default_hooks' if fetch(:shoryuken_default_hooks)
+  end
+  after :publishing, :restart_shoryuken do
+    invoke 'shoryuken:restart' if fetch(:shoryuken_default_hooks)
+  end
+end
+
+namespace :shoryuken do
+
+  def pid_process_exists?(pid_file)
+    pid_file_exists?(pid_file) and test(*("kill -0 $( cat #{pid_file} )").split(' '))
+  end
+
+  def pid_file_exists?(pid_file)
+    test(*("[ -f #{pid_file} ]").split(' '))
+  end
+  
+  task :add_default_hooks do
+    after 'deploy:updated', 'shoryuken:stop'
+    after 'deploy:reverted', 'shoryuken:stop'
+    after 'deploy:published', 'shoryuken:start'
+  end
+
+  desc 'Stop the shoryuken process, gracefully'
+  task :stop do
+    on roles fetch(:shoryuken_role) do
+      if test("[ -d #{release_path} ]")
+        within release_path do
+          pid_file = fetch(:shoryuken_pid)
+          if pid_file_exists?(pid_file)
+            execute "kill -USR1 `cat '#{pid_file}'` >/dev/null 2>&1"
+            print 'Waiting for shoryuken to shutdown...'
+            execute "while [ -f '#{pid_file}' ] && kill -0 `cat '#{pid_file}'` >/dev/null 2>&1; do sleep 1; done && rm -f '#{pid_file}'"
+          end
+        end
+      end
+    end
+  end
+  
+  desc 'Shutdown the shoryuken process, immediately'
+  task :shutdown do
+    on roles fetch(:shoryuken_role) do
+      if test("[ -d #{release_path} ]")
+        within release_path do
+          pid_file = fetch(:shoryuken_pid)
+          execute "kill `cat '#{pid_file}'`" if pid_file_exists?(pid_file)
+        end
+      end
+    end
+  end
+
+  desc 'Start the shoryuken process'
+  task :start do
+    on roles fetch(:shoryuken_role) do
+      if test("[ -d #{release_path} ]")
+        within release_path do
+          pid_file = fetch(:shoryuken_pid)
+          unless pid_process_exists?(pid_file)
+            args = ['--rails --daemon']
+            args.push "--pidfile '#{pid_file}'"
+            logfile = fetch(:shoryuken_log) and args.push "--logfile '#{logfile}'"
+            config = fetch(:shoryuken_config) and args.push "--config '#{config}'"
+            queues = Array(fetch(:shoryuken_queues)) and queues.each{|queue| args.push "--queue #{queue}" }
+            options = fetch(:shoryuken_options) and args.push Array(options).join(' ')
+            
+            cmd = "bundle exec shoryuken"
+            env = fetch(:shoryuken_env) and cmd = "RAILS_ENV=#{env} #{cmd}"
+            
+            execute "#{cmd} #{args.compact.join(' ')}"
+          end
+        end
+      end
+    end
+  end
+
+  desc 'Restart shoryuken'
+  task :restart do
+    invoke 'shoryuken:stop'
+    invoke 'shoryuken:start'
+  end
+  
+  desc 'Make the shoryuken process log detailed status information'
+  task :log_status do
+    on roles fetch(:shoryuken_role) do
+      pid_file = fetch(:shoryuken_pid)
+      execute "kill -TTIN `cat '#{pid_file}'`" if pid_file_exists?(pid_file)
+    end
+  end
+  
+  desc 'Tail the shoryuken log forever'
+  task :tail_log do
+    on roles fetch(:shoryuken_role) do
+      run "tail -f '#{fetch(:shoryuken_log)}'"
+    end
+  end
+
+  desc 'Tail ENV[number] lines of the shoryuken log'
+  task :tail_log_lines do
+    on roles fetch(:shoryuken_role) do
+      run "tail -n #{ENV.fetch('number',20)} '#{fetch(:shoryuken_log)}'"
+    end
+  end
+end
