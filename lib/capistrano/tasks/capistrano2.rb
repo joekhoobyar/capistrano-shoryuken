@@ -2,16 +2,17 @@ Capistrano::Configuration.instance.load do
 
   _cset(:shoryuken_default_hooks) { true }
 
-  _cset(:shoryuken_pid) { File.join(shared_path, 'pids', 'shoryuken.pid') }
-  _cset(:shoryuken_env) { fetch(:rack_env, fetch(:rails_env, 'production')) }
-  _cset(:shoryuken_log) { File.join(shared_path, 'log', 'shoryuken.log') }
-  _cset(:shoryuken_config) { "#{current_path}/config/shoryuken.yml" }
-  _cset(:shoryuken_options) { '--rails' }
-  _cset(:shoryuken_queues) { nil }
+  _cset(:shoryuken_pid)      { File.join(shared_path, 'pids', 'shoryuken.pid') }
+  _cset(:shoryuken_env)      { fetch(:rack_env, fetch(:rails_env, 'production')) }
+  _cset(:shoryuken_log)      { File.join(shared_path, 'log', 'shoryuken.log') }
+  _cset(:shoryuken_config)   { "#{current_path}/config/shoryuken.yml" }
+  _cset(:shoryuken_requires) { [] }
+  _cset(:shoryuken_queues)   { [] }
+  _cset(:shoryuken_options)  { '--rails' }
 
-  _cset(:shoryuken_cmd) { "#{fetch(:bundle_cmd, 'bundle')} exec shoryuken" }
+  _cset(:shoryuken_cmd)     { "#{fetch(:bundle_cmd, 'bundle')} exec shoryuken" }
 
-  _cset(:shoryuken_role) { :app }
+  _cset(:shoryuken_role)    { :app }
 
   if fetch(:shoryuken_default_hooks)
     after 'deploy:stop', 'shoryuken:stop'
@@ -43,6 +44,7 @@ Capistrano::Configuration.instance.load do
       logfile = fetch(:shoryuken_log) and args.push "--logfile '#{logfile}'"
       config = fetch(:shoryuken_config) and args.push "--config '#{config}'"
       queues = Array(fetch(:shoryuken_queues)) and queues.each{|queue| args.push "--queue #{queue}" }
+      reqs = Array(fetch(:shoryuken_requires)) and reqs.each{|req| args.push "--require #{req}" }
       options = fetch(:shoryuken_options) and args.push Array(options).join(' ')
       
       cmd = fetch(:shoryuken_cmd)

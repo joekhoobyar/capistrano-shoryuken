@@ -2,13 +2,15 @@ namespace :load do
   task :defaults do
     set :shoryuken_default_hooks, -> { true }
 
-    set :shoryuken_pid,     -> { File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid') }
-    set :shoryuken_env,     -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
-    set :shoryuken_log,     -> { File.join(shared_path, 'log', 'shoryuken.log') }
-    set :shoryuken_config,  -> { File.join(release_path, 'config', 'shoryuken.yml') }
-    set :shoryuken_options, -> { '--rails' }
+    set :shoryuken_pid,      -> { File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid') }
+    set :shoryuken_env,      -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
+    set :shoryuken_log,      -> { File.join(shared_path, 'log', 'shoryuken.log') }
+    set :shoryuken_config,   -> { File.join(release_path, 'config', 'shoryuken.yml') }
+    set :shoryuken_requires, -> { [] }
+    set :shoryuken_queues,   -> { [] }
+    set :shoryuken_options,  -> { '--rails' }
       
-    set :shoryuken_role,    -> { :app }
+    set :shoryuken_role,     -> { :app }
     
     # Rbenv and RVM integration
     set :rbenv_map_bins, fetch(:rbenv_map_bins).to_a.concat(%w(shoryuken))
@@ -89,6 +91,7 @@ namespace :shoryuken do
           logfile = fetch(:shoryuken_log) and args.push "--logfile '#{logfile}'"
           config = fetch(:shoryuken_config) and args.push "--config '#{config}'"
           queues = Array(fetch(:shoryuken_queues)) and queues.each{|queue| args.push "--queue #{queue}" }
+          reqs = Array(fetch(:shoryuken_requires)) and reqs.each{|req| args.push "--require #{req}" }
           options = fetch(:shoryuken_options) and args.push Array(options).join(' ')
           
           with rails_env: fetch(:shoryuken_env) do

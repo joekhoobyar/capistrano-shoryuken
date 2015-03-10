@@ -24,18 +24,22 @@ And then execute:
 ```
 
 
-Configurable options, shown here with defaults:
+Configurable options, shown here with defaults (using Capistrano 3 syntax):
 
 ```ruby
     # config/deploy.rb
-    :shoryuken_default_hooks => true
-    :shoryuken_pid => File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid')
-    :shoryuken_env => fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
-    :shoryuken_log => File.join(shared_path, 'log', 'shoryuken.log')
-    :shoryuken_config => File.join(release_path, 'config', 'shoryuken.yml')
-    :shoryuken_options => ['--rails']
-    :shoryuken_queue => nil
-    :shoryuken_role => :app
+    
+    # Whether or not to hook into the default deployment recipe.
+    set :shoryuken_default_hooks,  true
+    
+    set :shoryuken_pid,            -> { File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid') }
+    set :shoryuken_env,            -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
+    set :shoryuken_log,            -> { File.join(shared_path, 'log', 'shoryuken.log') }
+    set :shoryuken_config,         -> { File.join(release_path, 'config', 'shoryuken.yml') }
+    set :shoryuken_requires,       -> { [] }
+    set :shoryuken_options,        -> { ['--rails'] }
+    set :shoryuken_queues,         -> { [] }
+    set :shoryuken_role,           :app
 ```
 
 ## Changelog
