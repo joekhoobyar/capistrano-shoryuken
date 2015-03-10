@@ -25,7 +25,7 @@ Capistrano::Configuration.instance.load do
     task :stop, roles: lambda { fetch(:shoryuken_role) }, on_no_matching_servers: :continue do
       pid_file = fetch(:shoryuken_pid)
       
-      run "cd #{current_path} ; kill -USR1 `cat '#{pid_file}'` >/dev/null 2>&1"
+      run "cd #{current_path} ; kill -USR1 `cat '#{pid_file}'` >/dev/null 2>&1 || true"
       print 'Waiting for shoryuken to shutdown...'
       run "cd #{current_path} && while [ -f '#{pid_file}' ] && kill -0 `cat '#{pid_file}'` >/dev/null 2>&1; do sleep 1; done && rm -f '#{pid_file}'"
     end
