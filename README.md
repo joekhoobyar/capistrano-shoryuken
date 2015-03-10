@@ -43,6 +43,7 @@ Configurable options, shown here with defaults (using Capistrano 3 syntax):
 ```
 
 ## Changelog
+- 0.1.2: Support --require option.
 - 0.1.1: Default --rails option. Support Capistrano 3
 - 0.1.0: Support Capistrano 2
 
