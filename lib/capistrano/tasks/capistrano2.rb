@@ -5,9 +5,8 @@ Capistrano::Configuration.instance.load do
   _cset(:shoryuken_pid) { File.join(shared_path, 'pids', 'shoryuken.pid') }
   _cset(:shoryuken_env) { fetch(:rack_env, fetch(:rails_env, 'production')) }
   _cset(:shoryuken_log) { File.join(shared_path, 'log', 'shoryuken.log') }
-
   _cset(:shoryuken_config) { "#{current_path}/config/shoryuken.yml" }
-  _cset(:shoryuken_options) { nil }
+  _cset(:shoryuken_options) { '--rails' }
   _cset(:shoryuken_queues) { nil }
 
   _cset(:shoryuken_cmd) { "#{fetch(:bundle_cmd, 'bundle')} exec shoryuken" }
@@ -39,7 +38,7 @@ Capistrano::Configuration.instance.load do
     task :start, roles: lambda { fetch(:shoryuken_role) }, on_no_matching_servers: :continue do
       pid_file = fetch(:shoryuken_pid)
       
-      args = ['--rails --daemon']
+      args = ['--daemon']
       args.push "--pidfile '#{pid_file}'"
       logfile = fetch(:shoryuken_log) and args.push "--logfile '#{logfile}'"
       config = fetch(:shoryuken_config) and args.push "--config '#{config}'"
