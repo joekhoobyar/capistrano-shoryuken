@@ -43,6 +43,7 @@ Configurable options, shown here with defaults (using Capistrano 3 syntax):
 ```
 
 ## Changelog
+- 0.1.4: Minimum ruby 1.9.2
 - 0.1.3: Fix erroneous auto-loading from Bundler.require
 - 0.1.2: Support --require option.
 - 0.1.1: Default --rails option. Support Capistrano 3
