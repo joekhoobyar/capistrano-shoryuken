@@ -68,6 +68,7 @@ namespace :shoryuken do
         end
       end
     end
+    Rake::Task['shoryuken:stop'].reenable
   end
   
   desc 'Shutdown the shoryuken process, immediately'
