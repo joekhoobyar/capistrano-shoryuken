@@ -42,7 +42,7 @@ Capistrano::Configuration.instance.load do
       args = ['--daemon']
       args.push "--pidfile '#{pid_file}'"
       logfile = fetch(:shoryuken_log) and args.push "--logfile '#{logfile}'"
-      config = fetch(:shoryuken_config) and args.push "--config '#{config}'"
+      config = fetch(:shoryuken_config) and args.push "--config_file '#{config}'"
       queues = Array(fetch(:shoryuken_queues)) and queues.each{|queue| args.push "--queue #{queue}" }
       reqs = Array(fetch(:shoryuken_requires)) and reqs.each{|req| args.push "--require #{req}" }
       options = fetch(:shoryuken_options) and args.push Array(options).join(' ')
