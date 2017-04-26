@@ -2,6 +2,7 @@ namespace :load do
   task :defaults do
     set :shoryuken_default_hooks, -> { true }
 
+    set :shoryuken_cmd,      -> { [:bundle, :exec, :shoryuken] }
     set :shoryuken_pid,      -> { File.join(shared_path, 'tmp', 'pids', 'shoryuken.pid') }
     set :shoryuken_env,      -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
     set :shoryuken_log,      -> { File.join(shared_path, 'log', 'shoryuken.log') }
@@ -95,7 +96,7 @@ namespace :shoryuken do
           options = fetch(:shoryuken_options) and args.push Array(options).join(' ')
           
           with rails_env: fetch(:shoryuken_env) do
-            execute :bundle, :exec, :shoryuken, args.compact.join(' ')
+            execute *fetch(:shoryuken_cmd), args.compact.join(' ')
           end
         end
       end
