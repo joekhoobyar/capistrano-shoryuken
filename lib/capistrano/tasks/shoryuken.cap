@@ -22,9 +22,6 @@ namespace :deploy do
   before :starting, :check_shoryuken_hooks do
     invoke 'shoryuken:add_default_hooks' if fetch(:shoryuken_default_hooks)
   end
-  after :publishing, :restart_shoryuken do
-    invoke 'shoryuken:restart' if fetch(:shoryuken_default_hooks)
-  end
 end
 
 namespace :shoryuken do
@@ -50,8 +47,8 @@ namespace :shoryuken do
   
   task :add_default_hooks do
     after 'deploy:updated', 'shoryuken:stop'
-    after 'deploy:reverted', 'shoryuken:stop'
     after 'deploy:published', 'shoryuken:start'
+    after 'deploy:failed', 'shoryuken:restart'
   end
 
   desc 'Stop the shoryuken process, gracefully'
@@ -104,8 +101,8 @@ namespace :shoryuken do
 
   desc 'Restart shoryuken'
   task :restart do
-    invoke 'shoryuken:stop'
-    invoke 'shoryuken:start'
+    invoke! 'shoryuken:stop'
+    invoke! 'shoryuken:start'
   end
   
   desc 'Make the shoryuken process log detailed status information'
